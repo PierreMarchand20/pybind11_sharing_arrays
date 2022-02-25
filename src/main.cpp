@@ -31,6 +31,9 @@ class VectorContainer {
     // To get the data from python, avoiding a copy into a std::vector, one can use std::span for C++20, or directly pybind11::array which is relatively similar to std::vector
     void numpy_to_cpp_without_copy_owned_by_python(py::array_t<double, py::array::c_style> python_input) { cpp_pyarray = python_input; };
 
+    // Sharing without copy from numpy array to vector, while transfering ownership from python to c++
+    // I do not know how to do it...
+
     // Modifying
     void modify_cpp_vector() { cpp_vector.push_back(10); }
     void modify_python_vector() { python_vector.push_back(10); }
