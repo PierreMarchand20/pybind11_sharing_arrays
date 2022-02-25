@@ -31,14 +31,15 @@ class VectorContainer {
     // To get the data from python, avoiding a copy into a std::vector, one can use std::span for C++20, or directly pybind11::array which is relatively similar to std::vector
     void numpy_to_cpp_without_copy_owned_by_python(py::array_t<double, py::array::c_style> python_input) { cpp_pyarray = python_input; };
 
+    void numpy_to_cpp_without_copy_owned_by_python_const(const py::array_t<double, py::array::c_style> &python_input) { cpp_pyarray = python_input; };
+
     // Sharing without copy from numpy array to vector, while transfering ownership from python to c++
     // I do not know how to do it...
 
     // Modifying
-    void modify_cpp_vector() { cpp_vector.push_back(10); }
-    void modify_python_vector() { python_vector.push_back(10); }
-    void modify_cpp_pyarray() {
-        cpp_pyarray.resize({cpp_pyarray.size()});
+    void change_cpp_vector() { cpp_vector.back() = 10; }
+    void change_python_vector() { python_vector.back() = 10; }
+    void change_cpp_pyarray() {
         cpp_pyarray.mutable_at(cpp_pyarray.size() - 1) = 10;
     }
 
@@ -60,7 +61,7 @@ class VectorContainer {
         }
         std::cout << python_vector[python_vector.size() - 1] << "]\n";
     }
-    void print_cpp_pyarray_vector(std::string preoutput) const {
+    void print_cpp_pyarray(std::string preoutput) const {
         std::cout << preoutput << "[";
         for (size_t i = 0; i < cpp_pyarray.size() - 1; i++) {
             std::cout << cpp_pyarray.at(i) << ",";
@@ -69,22 +70,6 @@ class VectorContainer {
     }
 };
 
-// int cpp_to_python_without_copy_owned_by_cpp(int i, int j) {
-//     return i + j;
-// }
-
-// int python_to_cpp_without_copy_owned_by_python(int i, int j) {
-//     return i + j;
-// }
-
-// int cpp_to_python_without_copy_owned_by_python(int i, int j) {
-//     return i + j;
-// }
-
-// int python_to_cpp_without_copy_owned_by_cpp(int i, int j) {
-//     return i + j;
-// }
-
 PYBIND11_MODULE(Pybind11ExampleSharingArrays, m) {
     m.doc() = "pybind11 example plugin for sharing arrays";
 
@@ -92,13 +77,14 @@ PYBIND11_MODULE(Pybind11ExampleSharingArrays, m) {
         .def(py::init<size_t, double>())
         .def("print_cpp_vector", &VectorContainer::print_cpp_vector)
         .def("print_python_vector", &VectorContainer::print_python_vector)
-        .def("print_cpp_pyarray_vector", &VectorContainer::print_cpp_pyarray_vector)
+        .def("print_cpp_pyarray", &VectorContainer::print_cpp_pyarray)
         .def("vector_to_list_with_copy", &VectorContainer::vector_to_list_with_copy)
         .def("python_to_cpp_with_copy", &VectorContainer::python_to_cpp_with_copy)
         .def("numpy_to_cpp_without_copy_owned_by_python", &VectorContainer::numpy_to_cpp_without_copy_owned_by_python)
+        .def("numpy_to_cpp_without_copy_owned_by_python_const", &VectorContainer::numpy_to_cpp_without_copy_owned_by_python_const)
         .def("vector_to_numpy_without_copy_owned_by_cpp", &VectorContainer::vector_to_numpy_without_copy_owned_by_cpp)
         .def("vector_to_numpy_without_copy_owned_by_python", &VectorContainer::vector_to_numpy_without_copy_owned_by_python)
-        .def("modify_cpp_vector", &VectorContainer::modify_cpp_vector)
-        .def("modify_cpp_pyarray", &VectorContainer::modify_cpp_pyarray)
-        .def("modify_python_vector", &VectorContainer::modify_python_vector);
+        .def("change_cpp_vector", &VectorContainer::change_cpp_vector)
+        .def("change_cpp_pyarray", &VectorContainer::change_cpp_pyarray)
+        .def("change_python_vector", &VectorContainer::change_python_vector);
 }
